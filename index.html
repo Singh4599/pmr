@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>L V Spices — Preventive Maintenance Record (PMR)</title>
+  <meta name="description" content="L V Spices Preventive Maintenance Record — Weighing Scale & Sealing Machine maintenance tracker." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800;900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <link rel="icon" type="image/jpeg" href="assets/lv_spices_logo.jpg" />
+  <link rel="stylesheet" href="css/app.css" />
+</head>
+<body>
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<!-- PMR EDIT MODAL -->
+<div class="modal-overlay" id="pmr-edit-overlay" onclick="if(event.target===this)closePmrEdit()">
+  <div class="modal-box" style="max-width:580px;">
+    <div class="modal-header">
+      <div>
+        <h3>Edit PMR Record <span id="pmr-edit-id" style="font-weight:400;font-size:14px;color:var(--text-muted)"></span></h3>
+        <div id="pmr-edit-step-sub" style="font-size:11px;color:var(--text-muted);margin-top:2px;"></div>
+      </div>
+      <button class="modal-close" onclick="closePmrEdit()">&#x2715;</button>
+    </div>
+    <div class="modal-steps-bar" id="pmr-edit-steps-bar"></div>
+    <div class="modal-body" id="pmr-edit-equipment-sections"></div>
+    <div class="modal-footer" style="justify-content:space-between;">
+      <button class="btn-ghost" id="pmr-edit-back-btn" onclick="pmrEditStepNav(-1)" style="display:none;">&#8592; Back</button>
+      <div style="display:flex;gap:10px;margin-left:auto;">
+        <button class="btn-ghost" onclick="closePmrEdit()">Cancel</button>
+        <button class="btn-primary" id="pmr-edit-next-btn" onclick="pmrEditStepNav(1)">Next &#8594;</button>
+        <button class="btn-primary hidden" id="pmr-edit-save-btn" onclick="savePmrEdit()">Save Changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- NEW RECORD MODAL -->
+<div class="modal-overlay" id="modal-overlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box" style="max-width:620px;">
+    <div class="modal-header">
+      <div>
+        <h3 id="modal-title">New Maintenance Record</h3>
+        <div id="modal-step-sub" style="font-size:11px;color:var(--text-muted);margin-top:2px;">Step 1 of 5 — Record Details</div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+
+    <!-- Step indicator -->
+    <div class="modal-steps-bar">
+      <div class="modal-step active" id="step-dot-0"></div>
+      <div class="modal-step" id="step-dot-1"></div>
+      <div class="modal-step" id="step-dot-2"></div>
+      <div class="modal-step" id="step-dot-3"></div>
+      <div class="modal-step" id="step-dot-4"></div>
+    </div>
+
+    <div class="modal-body">
+      <!-- STEP 0: Record Info -->
+      <div class="modal-step-panel" id="panel-0">
+        <div class="form-row">
+          <label>Maintenance Date *</label>
+          <input type="date" id="n-date" />
+        </div>
+        <div style="display:flex;gap:12px;margin-top:10px;">
+          <div style="flex:1" class="form-row">
+            <label>Prepared By</label>
+            <input type="text" id="n-prepared" placeholder="Rajesh Sharma" />
+          </div>
+          <div style="flex:1" class="form-row">
+            <label>Verified By</label>
+            <input type="text" id="n-verified" placeholder="Vishal" />
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 1: WS-01 -->
+      <div class="modal-step-panel hidden" id="panel-1">
+        <div class="eq-entry-header"><span class="eq-entry-dot dot-green"></span><strong>Weighing Scale – 1</strong><span class="eq-entry-id">WS-01 · Packing Area</span></div>
+        <div class="checks-checkbox-grid">
+          <label><input type="checkbox" name="ws01" value="Accuracy Check" checked> Accuracy Check</label>
+          <label><input type="checkbox" name="ws01" value="Display Check" checked> Display Check</label>
+          <label><input type="checkbox" name="ws01" value="Cleaning" checked> Cleaning</label>
+          <label><input type="checkbox" name="ws01" value="Leveling" checked> Leveling</label>
+          <label><input type="checkbox" name="ws01" value="Battery / Power" checked> Battery / Power</label>
+          <label><input type="checkbox" name="ws01" value="Physical Condition" checked> Physical Condition</label>
+          <label><input type="checkbox" name="ws01" value="Repair (if any)"> Repair (if any)</label>
+          <label><input type="checkbox" name="ws01" value="Calibration (if done)" checked> Calibration (if done)</label>
+        </div>
+        <div class="form-row" style="margin-top:10px"><label>Repair / Action Taken</label><input type="text" id="repair-ws01" placeholder="e.g. Calibration verified with 1 kg standard weight." /></div>
+      </div>
+
+      <!-- STEP 2: WS-02 -->
+      <div class="modal-step-panel hidden" id="panel-2">
+        <div class="eq-entry-header"><span class="eq-entry-dot dot-green"></span><strong>Weighing Scale – 2</strong><span class="eq-entry-id">WS-02 · Packing Area</span></div>
+        <div class="checks-checkbox-grid">
+          <label><input type="checkbox" name="ws02" value="Accuracy Check" checked> Accuracy Check</label>
+          <label><input type="checkbox" name="ws02" value="Display Check" checked> Display Check</label>
+          <label><input type="checkbox" name="ws02" value="Cleaning" checked> Cleaning</label>
+          <label><input type="checkbox" name="ws02" value="Leveling" checked> Leveling</label>
+          <label><input type="checkbox" name="ws02" value="Battery / Power" checked> Battery / Power</label>
+          <label><input type="checkbox" name="ws02" value="Physical Condition" checked> Physical Condition</label>
+          <label><input type="checkbox" name="ws02" value="Repair (if any)"> Repair (if any)</label>
+          <label><input type="checkbox" name="ws02" value="Calibration (if done)" checked> Calibration (if done)</label>
+        </div>
+        <div class="form-row" style="margin-top:10px"><label>Repair / Action Taken</label><input type="text" id="repair-ws02" placeholder="e.g. Calibration verified with 1 kg standard weight." /></div>
+      </div>
+
+      <!-- STEP 3: SM-01 -->
+      <div class="modal-step-panel hidden" id="panel-3">
+        <div class="eq-entry-header"><span class="eq-entry-dot dot-blue"></span><strong>Sealing Machine – 1</strong><span class="eq-entry-id">SM-01 · Packing Area</span></div>
+        <div class="checks-checkbox-grid">
+          <label><input type="checkbox" name="sm01" value="Heating Check" checked> Heating Check</label>
+          <label><input type="checkbox" name="sm01" value="Seal Quality Check" checked> Seal Quality Check</label>
+          <label><input type="checkbox" name="sm01" value="Teflon Belt / Strip" checked> Teflon Belt / Strip</label>
+          <label><input type="checkbox" name="sm01" value="Cleaning" checked> Cleaning</label>
+          <label><input type="checkbox" name="sm01" value="Temperature Setting" checked> Temperature Setting</label>
+          <label><input type="checkbox" name="sm01" value="Conveyor / Roller" checked> Conveyor / Roller</label>
+          <label><input type="checkbox" name="sm01" value="Electrical Wiring" checked> Electrical Wiring</label>
+          <label><input type="checkbox" name="sm01" value="Repair (if any)"> Repair (if any)</label>
+        </div>
+        <div class="form-row" style="margin-top:10px"><label>Repair / Action Taken</label><input type="text" id="repair-sm01" placeholder="e.g. Minor cleaning done. All parts functional." /></div>
+      </div>
+
+      <!-- STEP 4: SM-02 -->
+      <div class="modal-step-panel hidden" id="panel-4">
+        <div class="eq-entry-header"><span class="eq-entry-dot dot-blue"></span><strong>Sealing Machine – 2</strong><span class="eq-entry-id">SM-02 · Packing Area</span></div>
+        <div class="checks-checkbox-grid">
+          <label><input type="checkbox" name="sm02" value="Heating Check" checked> Heating Check</label>
+          <label><input type="checkbox" name="sm02" value="Seal Quality Check" checked> Seal Quality Check</label>
+          <label><input type="checkbox" name="sm02" value="Teflon Belt / Strip" checked> Teflon Belt / Strip</label>
+          <label><input type="checkbox" name="sm02" value="Cleaning" checked> Cleaning</label>
+          <label><input type="checkbox" name="sm02" value="Temperature Setting" checked> Temperature Setting</label>
+          <label><input type="checkbox" name="sm02" value="Conveyor / Roller" checked> Conveyor / Roller</label>
+          <label><input type="checkbox" name="sm02" value="Electrical Wiring" checked> Electrical Wiring</label>
+          <label><input type="checkbox" name="sm02" value="Repair (if any)"> Repair (if any)</label>
+        </div>
+        <div class="form-row" style="margin-top:10px"><label>Repair / Action Taken</label><input type="text" id="repair-sm02" placeholder="e.g. Minor cleaning done. All parts functional." /></div>
+      </div>
+    </div>
+
+    <div class="modal-footer" style="justify-content:space-between;">
+      <button class="btn-ghost" id="modal-back-btn" onclick="modalStepNav(-1)" style="display:none;">← Back</button>
+      <div style="display:flex;gap:10px;margin-left:auto;">
+        <button class="btn-ghost" onclick="closeModal()">Cancel</button>
+        <button class="btn-primary" id="modal-next-btn" onclick="modalStepNav(1)">Next →</button>
+        <button class="btn-primary hidden" id="save-pmr-btn" onclick="saveNewRecord()">Save Record</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="app-container">
+  <!-- SIDEBAR (Luxury Warm Cream Spice Aesthetic) -->
+  <aside class="sidebar" id="sidebar">
+    <!-- Pinned Top Header -->
+    <div class="sidebar-brand">
+      <div class="brand-logo-wrap">
+        <img src="assets/lv_spices_logo.jpg" alt="L V Spices Logo" class="brand-logo-img" />
+      </div>
+      <div class="brand-text">
+        <h1>L V SPICES</h1>
+        <span>PMR – MAINTENANCE</span>
+      </div>
+      <button class="sidebar-close-btn" onclick="closeSidebar()" aria-label="Close Sidebar">✕</button>
+    </div>
+
+    <!-- 3 Mini Statistics Cards -->
+    <div class="sidebar-stats-grid">
+      <div class="stat-mini-card">
+        <div class="stat-mini-icon stat-icon-red">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="16" height="16"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        </div>
+        <div class="stat-mini-content">
+          <span class="stat-val" id="stat-total">—</span>
+          <span class="stat-lbl">RECORDS</span>
+        </div>
+      </div>
+
+      <div class="stat-mini-card">
+        <div class="stat-mini-icon stat-icon-orange">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="16" height="16"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </div>
+        <div class="stat-mini-content">
+          <span class="stat-val" id="stat-equipment">11</span>
+          <span class="stat-lbl">EQUIPMENT</span>
+        </div>
+      </div>
+
+      <div class="stat-mini-card card-full-due">
+        <div class="stat-mini-icon stat-icon-blue">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="16" height="16"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        </div>
+        <div class="stat-mini-content">
+          <span class="stat-val stat-val-blue" id="stat-next">—</span>
+          <span class="stat-lbl">NEXT DUE</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" placeholder="Search records..." oninput="onSearchChange(this.value)" />
+    </div>
+
+    <!-- Maintenance Records -->
+    <div class="sidebar-records-section">
+      <div class="section-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><polyline points="6 9 12 15 18 9"/></svg>
+        MAINTENANCE RECORDS
+      </div>
+      <div class="record-list" id="record-list">
+        <div class="loading-msg">Loading records…</div>
+      </div>
+    </div>
+
+    <!-- Isolated Photorealistic Spices at Bottom-Left -->
+    <div class="sidebar-spice-wrap">
+      <img src="assets/sidebar-pmr-spices.png" alt="Indian Spices Arrangement" class="sidebar-spice-img" />
+    </div>
+  </aside>
+
+  <!-- MAIN DASHBOARD -->
+  <div class="main-wrapper">
+    <!-- Header Topbar -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="mobile-menu-btn" onclick="toggleSidebar()" aria-label="Toggle Menu">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <div>
+          <h1 class="page-title">Preventive <span class="title-highlight">Maintenance Record</span></h1>
+          <div class="page-subtitle">
+            Repacking &amp; Packaging Equipment • Checked by <strong class="name-highlight">Rajesh Sharma</strong> • 📅 Next Due: 2 Months
+          </div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="cloud-badge connected" id="cloud-status-badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/><polyline points="8 14 11 17 16 11"/></svg>
+          <span id="cloud-status-text">Cloud Synced</span>
+        </div>
+        <button class="btn-topbar-action" onclick="openNewModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="15" height="15"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          New Record
+        </button>
+        <button class="btn-topbar-export" onclick="exportExcel()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Export Excel
+        </button>
+      </div>
+    </header>
+
+    <!-- 7 RECORD INFORMATION METADATA CARDS -->
+    <div class="metadata-bar">
+      <div class="meta-card">
+        <div class="meta-icon-box icon-red">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        </div>
+        <div class="meta-card-body">
+          <span class="meta-lbl">RECORD ID</span>
+          <span class="meta-val" id="det-id">—</span>
+        </div>
+      </div>
+
+      <div class="meta-card">
+        <div class="meta-icon-box icon-orange">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        </div>
+        <div class="meta-card-body">
+          <span class="meta-lbl">DATE</span>
+          <span class="meta-val" id="det-date">—</span>
+        </div>
+      </div>
+
+      <div class="meta-card">
+        <div class="meta-icon-box icon-amber">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+        </div>
+        <div class="meta-card-body">
+          <span class="meta-lbl">MONTH/YEAR</span>
+          <span class="meta-val" id="det-month">—</span>
+        </div>
+      </div>
+
+      <div class="meta-card">
+        <div class="meta-icon-box icon-blue">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        </div>
+        <div class="meta-card-body">
+          <span class="meta-lbl">NEXT DUE</span>
+          <span class="meta-val highlight-blue" id="det-next">—</span>
+        </div>
+      </div>
+
+      <div class="meta-card">
+        <div class="meta-icon-box icon-red">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </div>
+        <div class="meta-card-body">
+          <span class="meta-lbl">PREPARED BY</span>
+          <span class="meta-val" id="det-prepared">—</span>
+        </div>
+      </div>
+
+      <div class="meta-card">
+        <div class="meta-icon-box icon-red">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+        </div>
+        <div class="meta-card-body">
+          <span class="meta-lbl">VERIFIED BY</span>
+          <span class="meta-val" id="det-verified">—</span>
+        </div>
+      </div>
+
+
+    </div>
+
+    <!-- DETAILED MAINTENANCE RECORDS TABLE CARD (Only presentation, no separate cards) -->
+    <div class="table-section">
+      <div class="table-card">
+        <div class="table-card-header">
+          <div class="table-card-title">
+            <div class="table-title-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+            </div>
+            <span>Detailed Maintenance Records</span>
+          </div>
+          <div class="table-actions">
+            <button class="btn-table-action" onclick="printPage()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+              Print
+            </button>
+            <button class="btn-table-action" onclick="exportExcel()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Export
+            </button>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table class="pmr-table">
+            <thead>
+              <tr>
+                <th style="width: 50px; text-align: center;">SR.</th>
+                <th>EQUIPMENT</th>
+                <th>TYPE OF CHECK / MAINTENANCE</th>
+                <th>REPAIR / ACTION TAKEN</th>
+                <th>STATUS</th>
+                <th>CHECKED BY</th>
+                <th>NEXT DUE DATE</th>
+                <th>EDIT</th>
+              </tr>
+            </thead>
+            <tbody id="pmr-tbody">
+              <tr>
+                <td colspan="7" style="text-align:center;padding:40px;color:var(--text-muted)">Select a record to view details</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
