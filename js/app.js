@@ -3,6 +3,21 @@
 
 import { saveRecord, loadAllRecords, updateCloudBadge } from './firebase-config.js';
 
+// ── UNIT 11 / UNIT 12 TOGGLE ──────────────────────────────────────────────────
+const UNIT_STORAGE_KEY = 'lv_pmr_active_unit';
+let activeUnit = localStorage.getItem(UNIT_STORAGE_KEY) || 'Unit 11';
+
+window.setActiveUnit = function(unit) {
+  activeUnit = unit;
+  localStorage.setItem(UNIT_STORAGE_KEY, unit);
+  document.getElementById('unit-btn-11')?.classList.toggle('active', unit === 'Unit 11');
+  document.getElementById('unit-btn-12')?.classList.toggle('active', unit === 'Unit 12');
+};
+
+function initUnitToggle() {
+  setActiveUnit(activeUnit);
+}
+
 const EQUIPMENT = [
   {
     id: "WS-01", name: "Weighing Scale - 1", location: "Packing Area",
@@ -143,6 +158,7 @@ async function init() {
   if (allRecords.length > 0) openRecord(allRecords[0].id);
 
   try { window.scrollTo({ top: 0, behavior: 'instant' }); } catch (e) {}
+  initUnitToggle();
 }
 
 function renderStats() {
