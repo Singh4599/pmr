@@ -108,7 +108,7 @@ function generateRecords() {
         checksPerformed: checkedItems,
         repairAction: repairText,
         status: "OK",
-        checkedBy: "BHIMLAL SHARMA",
+        checkedBy: "Bhimlal Sharma",
         nextDueDate: formatDate(nextD)
       };
     });
@@ -120,7 +120,7 @@ function generateRecords() {
       displayDate: formatDate(d),
       month: d.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' }),
       equipmentRecords,
-      preparedBy: "BHIMLAL SHARMA",
+      preparedBy: "Bhimlal Sharma",
       verifiedBy: "Vishal",
       nextDueDate: formatDate(nextD),
       isGenerated: true
@@ -362,7 +362,7 @@ window.closeModal = function() {
 
 window.saveNewRecord = async function() {
   const dateVal = document.getElementById('n-date').value;
-  const preparedBy = document.getElementById('n-prepared').value.trim() || 'BHIMLAL SHARMA';
+  const preparedBy = document.getElementById('n-prepared').value.trim() || 'Bhimlal Sharma';
   const verifiedBy = document.getElementById('n-verified').value.trim() || 'Vishal';
   if (!dateVal) { alert('Select a date.'); return; }
 
