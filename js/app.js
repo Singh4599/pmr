@@ -448,7 +448,76 @@ window.exportExcel = function() {
   XLSX.writeFile(wb, `LV_Spices_PMR_${new Date().toISOString().split('T')[0]}.xlsx`);
 };
 
-window.printPage = function() { window.print(); };
+window.printPage = function() {
+  const r = allRecords.find(x => x.id === currentRecordId);
+  if (!r) { alert('No record selected.'); return; }
+  const eqs = r.equipmentRecords || [];
+  const rowH = Math.max(10, Math.floor(148 / (eqs.length || 1)));
+  function esc(v){ return v ? String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') : '—'; }
+  const rowsHtml = eqs.map((eq,i) => {
+    const allChecks = (EQUIPMENT.find(e=>e.id===eq.equipmentId)?.checks||[]).join(', ');
+    return `<tr style="height:${rowH}mm;${i%2===1?'background:#f7f7f7':''}">
+      <td style="text-align:center">${i+1}</td>
+      <td><b>${esc(eq.equipmentName)}</b><br><span style="font-size:6.5pt;color:#666">${esc(eq.equipmentId)} · ${esc(eq.location)}</span></td>
+      <td style="font-size:7pt">${esc(allChecks)}</td>
+      <td>${esc(eq.repairAction)}</td>
+      <td style="text-align:center"><span style="background:#16a34a;color:#fff;padding:1pt 5pt;border-radius:3pt;font-size:6.5pt;font-weight:700;-webkit-print-color-adjust:exact;print-color-adjust:exact">✔ OK</span></td>
+      <td>${esc(eq.checkedBy||r.preparedBy)}</td>
+    </tr>`;
+  }).join('');
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"/>
+<title>LV Spices — PMR Maintenance Record</title>
+<style>
+  @page{size:A4 portrait;margin:8mm}
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{font-family:Arial,sans-serif;font-size:8pt;color:#000;background:#fff}
+  .hdr{border:2pt solid #000;padding:6pt 8pt;margin-bottom:6pt}
+  .hdr h1{font-size:13pt;font-weight:800;text-transform:uppercase}
+  .hdr p{font-size:7pt;color:#444;margin-top:2pt}
+  .meta{display:grid;grid-template-columns:1fr 1fr;gap:4pt;margin-top:6pt;font-size:7.5pt}
+  .meta-item{border:0.5pt solid #ccc;padding:3pt 5pt}
+  .meta-item b{color:#B91C1C}
+  table{width:100%;border-collapse:collapse;margin-top:8pt}
+  thead{display:table-header-group}
+  tr{page-break-inside:avoid}
+  th{background:#1a1a1a;color:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact;font-size:7pt;padding:5pt 4pt;border:0.75pt solid #000;text-align:left}
+  td{font-size:8pt;padding:4pt;border:0.5pt solid #bbb;vertical-align:middle}
+  .sig{margin-top:12pt;font-size:8pt;display:flex;justify-content:space-between}
+</style></head><body>
+<div class="hdr">
+  <h1>Preventive Maintenance Record (PMR) — L V Spices</h1>
+  <p>FSSAI GMP Compliance • Equipment Maintenance &amp; Calibration Log</p>
+  <div class="meta">
+    <div class="meta-item">🔧 Record ID: <b>${esc(r.id)}</b></div>
+    <div class="meta-item">📅 Date: <b>${esc(r.date)}</b></div>
+    <div class="meta-item">📆 Month: <b>${esc(r.month)}</b></div>
+    <div class="meta-item">📅 Next Due: <b>${esc(r.nextDueDate)}</b></div>
+    <div class="meta-item">👤 Prepared By: <b>${esc(r.preparedBy)}</b></div>
+    <div class="meta-item">✅ Verified By: <b>${esc(r.verifiedBy)}</b></div>
+  </div>
+</div>
+<table>
+  <thead><tr>
+    <th style="width:5%">SR.</th>
+    <th style="width:22%">EQUIPMENT</th>
+    <th style="width:30%">TYPE OF CHECK / MAINTENANCE</th>
+    <th style="width:24%">REPAIR / ACTION TAKEN</th>
+    <th style="width:8%">STATUS</th>
+    <th style="width:11%">CHECKED BY</th>
+  </tr></thead>
+  <tbody>${rowsHtml}</tbody>
+</table>
+<div class="sig">
+  <span><b>Prepared By:</b> &nbsp; ${esc(r.preparedBy)}</span>
+  <span><b>Verified By:</b> &nbsp; ${esc(r.verifiedBy)}</span>
+  <span><b>Next Due:</b> ${esc(r.nextDueDate)}</span>
+</div>
+<script>window.onload=function(){window.print();setTimeout(function(){window.close();},800);};<\/script>
+</body></html>`;
+  const pw = window.open('','_blank','width=900,height=1200');
+  if(pw){pw.document.write(html);pw.document.close();}
+  else{alert('Allow popups to use Print.');}
+};
 
 // ── PMR Edit ───────────────────────────────────────────────────────────────
 let _pmrEditId = null;
